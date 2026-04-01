@@ -73,7 +73,9 @@ class AuditRepository:
             f"FROM audits a "
             f"JOIN companies c ON c.id = a.company_id "
             f"WHERE {where_sql} "
-            f"ORDER BY a.created_at DESC "
+            f"ORDER BY "
+            f"CASE a.status WHEN 'done' THEN 0 WHEN 'failed' THEN 1 WHEN 'processing' THEN 2 ELSE 3 END, "
+            f"a.created_at DESC "
             f"LIMIT ? OFFSET ?",
             [*params, per_page, offset],
         )

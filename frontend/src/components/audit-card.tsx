@@ -32,6 +32,7 @@ function PendingCard({ audit }: { audit: AuditCardType }) {
           <div className="text-xs font-bold uppercase tracking-wider mb-2 text-accent/40">
             <span className="btag">PENDING</span>
           </div>
+          <p className="font-mono text-sm text-muted mb-1 truncate">{audit.url}</p>
           <p className="font-mono text-sm text-accent/50">
             {t("queued")}<span className="terminal-cursor" />
           </p>
@@ -64,6 +65,7 @@ function ProcessingCard({ audit }: { audit: AuditCardType }) {
           <div className="text-xs font-bold uppercase tracking-wider mb-2 text-accent">
             <span className="btag">PROCESSING</span>
           </div>
+          <p className="font-mono text-sm text-muted mb-1 truncate">{audit.url}</p>
           <p className="font-mono text-sm text-accent">
             {t("scanning")}<span className="scanning-dots" />
           </p>
