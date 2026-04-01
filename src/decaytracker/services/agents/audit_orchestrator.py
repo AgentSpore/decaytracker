@@ -38,20 +38,14 @@ async def run_audit(audit_id: int, db: aiosqlite.Connection) -> None:
         else:
             result = await audit_website(url)
 
-        # Helper: serialize LocalizedText or plain str to JSON string
-        def _loc(val) -> str:
-            if hasattr(val, "model_dump"):
-                return json.dumps(val.model_dump(), ensure_ascii=False)
-            return str(val)
-
         # Save findings
         for f in result.findings:
             await finding_repo.create(
                 audit_id=audit_id,
                 type=f.type,
                 severity=f.severity,
-                title=_loc(f.title),
-                description=_loc(f.description),
+                title=f.title,
+                description=f.description,
                 evidence_url=f.evidence_url,
                 confidence=f.confidence,
             )
@@ -61,7 +55,7 @@ async def run_audit(audit_id: int, db: aiosqlite.Connection) -> None:
             audit_id=audit_id,
             trust_score=result.trust_score,
             severity=result.severity,
-            ai_summary=_loc(result.ai_summary),
+            ai_summary=result.ai_summary,
             metadata=result.metadata or {},
             status="done",
         )
@@ -70,7 +64,7 @@ async def run_audit(audit_id: int, db: aiosqlite.Connection) -> None:
         if result.title:
             await db.execute(
                 "UPDATE audits SET title = ?, subtitle = ? WHERE id = ?",
-                (_loc(result.title), _loc(result.subtitle), audit_id),
+                (result.title, result.subtitle, audit_id),
             )
             await db.commit()
 

@@ -16,9 +16,10 @@ def _make_model() -> FallbackModel:
     def _or(model_id: str) -> OpenAIModel:
         return OpenAIModel(model_id, provider=OpenAIProvider(base_url=OPENROUTER_BASE, api_key=OPENROUTER_KEY))
     return FallbackModel(
+        _or("qwen/qwen3-30b-a3b:free"),           # best at structured output
         _or("nvidia/nemotron-3-super-120b-a12b:free"),
-        _or("minimax/minimax-m2.5:free"),
         _or("stepfun/step-3.5-flash:free"),
+        _or("minimax/minimax-m2.5:free"),
     )
 
 
