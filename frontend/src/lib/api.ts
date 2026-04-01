@@ -1,4 +1,4 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8790";
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== "undefined" && window.location.hostname !== "localhost" ? "" : "http://localhost:8790");
 
 /* ── Types (match backend response exactly) ── */
 
