@@ -1,10 +1,10 @@
 #!/bin/sh
 set -e
 
-# Start Next.js frontend (standalone mode)
+# Start Next.js frontend (standalone mode) on port 3001
 cd /app/frontend-standalone
-node server.js &
+PORT=3001 node server.js &
 
-# Start FastAPI backend
+# Start FastAPI backend on port 8790
 cd /app
-exec uv run uvicorn decaytracker.main:app --host 0.0.0.0 --port ${PORT:-8790}
+exec uv run uvicorn decaytracker.main:app --host 0.0.0.0 --port 8790
