@@ -99,12 +99,12 @@ export default function FeedPage() {
               {t("masthead")}
             </h1>
             <p className="text-[10px] sm:text-xs text-muted uppercase tracking-widest mt-1">
-              AI-POWERED URL AUDITS // PUBLIC TIMELINE
+              {t("subtitle_line")}
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted">
             <span className="live-dot" />
-            <span>LIVE</span>
+            <span>{t("live")}</span>
           </div>
         </div>
         <div className="h-[2px] bg-accent" />
@@ -147,10 +147,10 @@ export default function FeedPage() {
       {/* Nav */}
       <div className="flex justify-between items-center mb-4">
         <span className="text-[10px] text-muted uppercase tracking-widest font-mono hidden sm:inline">
-          PRESS / TO SEARCH
+          {t("press_search")}
         </span>
         <Link href="/top" className="text-xs text-muted hover:text-accent border border-border px-3 py-1 uppercase tracking-wider hover:border-accent transition-colors ml-auto">
-          LEADERBOARD &rarr;
+          {t("leaderboard_link")} &rarr;
         </Link>
       </div>
 

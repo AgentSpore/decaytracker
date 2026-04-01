@@ -77,7 +77,7 @@ export const UrlInput = forwardRef<UrlInputHandle>(function UrlInput(_props, ref
           className="w-full sm:w-auto bg-accent text-bg px-6 py-3 font-mono font-bold text-sm uppercase tracking-wider hover:bg-accent2 disabled:opacity-50 transition-colors"
           data-testid="audit-submit-btn"
         >
-          {loading ? "..." : "RUN AUDIT"}
+          {loading ? "..." : t("run_audit")}
         </button>
       </div>
     </div>

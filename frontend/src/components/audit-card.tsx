@@ -33,7 +33,7 @@ function PendingCard({ audit }: { audit: AuditCardType }) {
             <span className="btag">PENDING</span>
           </div>
           <p className="font-mono text-sm text-accent/50">
-            QUEUED FOR AUDIT<span className="terminal-cursor" />
+            {t("queued")}<span className="terminal-cursor" />
           </p>
         </div>
       </div>
@@ -65,7 +65,7 @@ function ProcessingCard({ audit }: { audit: AuditCardType }) {
             <span className="btag">PROCESSING</span>
           </div>
           <p className="font-mono text-sm text-accent">
-            SCANNING<span className="scanning-dots" />
+            {t("scanning")}<span className="scanning-dots" />
           </p>
           {/* Indeterminate progress bar */}
           <div className="mt-3 h-1 bg-border overflow-hidden">
@@ -115,7 +115,7 @@ function FailedCard({ audit }: { audit: AuditCardType }) {
             <span className="text-xs text-muted">{timeAgo(audit.created_at)}</span>
           </div>
           <p className="font-mono text-sm text-red font-bold uppercase mb-3">
-            // AUDIT FAILED
+            {t("audit_failed_label")}
           </p>
           {audit.title && (
             <h3 className="font-bold text-[15px] leading-tight mb-3 text-muted">
@@ -128,7 +128,7 @@ function FailedCard({ audit }: { audit: AuditCardType }) {
             className="border border-red px-4 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-red hover:bg-red hover:text-bg transition-colors disabled:opacity-50"
             data-testid="retry-audit-btn"
           >
-            {retrying ? "..." : "RETRY"}
+            {retrying ? "..." : t("retry")}
           </button>
         </div>
       </div>
