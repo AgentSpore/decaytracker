@@ -4,13 +4,12 @@ All business logic lives in AuditService (injected via Depends).
 """
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 from ..deps import AuditServiceDep
 from ..schemas.audit import AuditDetail, AuditRequest
 from ..schemas.feed import FeedResponse
 from ..services.audit_agent import run_audit_agent
-from ..services.rate_limiter import audit_rate_limiter
 from ..services.url_validator import URLValidationError
 
 router = APIRouter(prefix="/api")
@@ -19,19 +18,10 @@ router = APIRouter(prefix="/api")
 @router.post("/audit", status_code=202)
 async def submit_audit(
     body: AuditRequest,
-    request: Request,
     background_tasks: BackgroundTasks,
     svc: AuditServiceDep,
 ):
     """Submit a URL for AI audit. Returns immediately, audit runs in background."""
-    # Task 1: IP-based rate limiting
-    client_ip = request.client.host if request.client else "unknown"
-    if not await audit_rate_limiter.check(client_ip):
-        raise HTTPException(
-            status_code=429,
-            detail="Rate limit: max 30 audits per hour",
-        )
-
     try:
         result = await svc.submit_audit(body.url)
     except URLValidationError:
