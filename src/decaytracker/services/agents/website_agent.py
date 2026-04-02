@@ -1,4 +1,4 @@
-"""Website/company audit agent — default for any URL."""
+"""Website/company audit agent — deep fraud & manipulation detection."""
 import asyncio
 
 from loguru import logger
@@ -27,39 +27,66 @@ class WebsiteAuditResult(BaseModel):
     metadata: dict = {}
 
 
-SYSTEM_PROMPT = """You are a trust auditor analyzing websites and companies.
+SYSTEM_PROMPT = """You are an expert fraud and manipulation auditor. Your job is to detect deception, fake reviews, bots, astroturfing, dark patterns, and consumer harm.
 
-Scoring guide:
-- 90-100: Excellent. Transparent, user-friendly, no complaints
-- 70-89: Good. Minor issues but generally trustworthy
-- 50-69: Mixed. Some concerning signals
-- 30-49: Poor. Multiple red flags, deceptive patterns
-- 0-29: Critical. Scam signals, widespread fraud
+## Scoring
+- 90-100: Excellent trust. Transparent, honest, no manipulation signals
+- 70-89: Good. Minor concerns but generally trustworthy
+- 50-69: Mixed. Some manipulation signals detected
+- 30-49: Poor. Multiple fraud/manipulation red flags
+- 0-29: Critical. Clear evidence of fraud, fake reviews, or deception
 
-Finding types: fake_reviews, price_manipulation, dark_pattern, hidden_fees,
-enshittification, permission_creep, data_harvesting, subscription_trap, positive_signal
+## Finding types (use these exact values):
+- fake_reviews: Bot reviews, purchased reviews, incentivized reviews, review farms
+- review_manipulation: Deleting negative reviews, gating, selective display
+- bot_activity: Automated fake engagement, astroturfing, sockpuppets
+- price_manipulation: Fake discounts, anchor pricing, bait-and-switch
+- dark_pattern: Manipulative UI, forced opt-ins, hidden checkboxes, shame-clicking
+- hidden_fees: Charges not disclosed upfront, surprise costs at checkout
+- enshittification: Degrading product quality while extracting more money
+- data_harvesting: Excessive data collection, selling user data
+- subscription_trap: Hard to cancel, dark patterns in cancellation flow
+- fake_social_proof: Fake testimonials, inflated numbers, fake urgency
+- astroturfing: Fake grassroots campaigns, paid opinions disguised as organic
+- positive_signal: Good transparency, fair practices, honest communication
 
-Severity for findings: critical, warning, info, positive
-Severity for the whole audit: "critical" if score < 30, "warning" if < 50, "neutral" if < 70, "clean" if >= 70
+## Severity: critical, warning, info, positive
 
-Rules:
-- ONLY report findings supported by evidence from the provided data
-- Include source URLs for findings when available
-- Be balanced — include positive_signal findings too
-- Low data = lower confidence scores
-- All text in English"""
+## Severity for whole audit: "critical" if score<30, "warning" if <50, "neutral" if <70, "clean" if >=70
+
+## Rules:
+- Focus on MANIPULATION and FRAUD detection — this is your primary mission
+- Look for patterns: fake urgency, inflated numbers, suspicious testimonials
+- Check if complaints mention bots, fake reviews, paid reviews, astroturfing
+- Report specific evidence with source URLs
+- Be balanced — report positive_signal findings for honest practices
+- If data is limited, be conservative (lower confidence, moderate score)"""
 
 
 async def audit_website(url: str) -> WebsiteAuditResult:
     domain = extract_domain(url)
     logger.info("Website audit: {} ({})", url[:60], domain)
 
+    # Step 1: Scrape the page
     page_data = await scrape_page(url)
-    await asyncio.sleep(1.5)
-    search1 = await web_search(f"{domain} scam complaints reviews 2025 2026", max_results=5)
-    await asyncio.sleep(1.5)
-    search2 = await web_search(f"{domain} dark patterns price increase enshittification", max_results=5)
 
+    # Step 2: Search for fraud/manipulation signals (5 targeted queries)
+    await asyncio.sleep(1.5)
+    search_scam = await web_search(f"{domain} scam fraud fake complaints 2024 2025 2026", max_results=5)
+
+    await asyncio.sleep(1.5)
+    search_reviews = await web_search(f"{domain} fake reviews bots purchased reviews manipulation", max_results=5)
+
+    await asyncio.sleep(1.5)
+    search_dark = await web_search(f"{domain} dark patterns hidden fees subscription trap cancellation", max_results=5)
+
+    await asyncio.sleep(1.5)
+    search_trust = await web_search(f"{domain} trustpilot reviews site:trustpilot.com OR site:bbb.org OR site:otzovik.com OR site:irecommend.ru", max_results=5)
+
+    await asyncio.sleep(1.5)
+    search_decay = await web_search(f"{domain} enshittification price increase worse quality 2025 2026", max_results=5)
+
+    # Step 3: Analyze with LLM
     model = _make_model()
     agent: Agent[None, WebsiteAuditResult] = Agent(
         model=model,
@@ -68,22 +95,43 @@ async def audit_website(url: str) -> WebsiteAuditResult:
         retries=3,
     )
 
-    prompt = f"""Audit this website/company:
+    prompt = f"""Perform a deep fraud and manipulation audit:
+
 URL: {url}
 Domain: {domain}
 
-Page content:
+== PAGE CONTENT ==
 Title: {page_data['title']}
 Description: {page_data['description']}
 Text (first 2000 chars): {page_data['text'][:2000]}
 
-Google search — complaints/scams:
-{search1}
+== SEARCH: Scam/fraud/complaints ==
+{search_scam}
 
-Google search — dark patterns/enshittification:
-{search2}
+== SEARCH: Fake reviews/bots/manipulation ==
+{search_reviews}
 
-Produce a structured trust audit with title, subtitle, trust_score (0-100), severity, ai_summary, and findings list."""
+== SEARCH: Dark patterns/hidden fees/subscription traps ==
+{search_dark}
+
+== SEARCH: Trustpilot/BBB/otzovik ratings ==
+{search_trust}
+
+== SEARCH: Enshittification/price hikes/quality decline ==
+{search_decay}
+
+Analyze all evidence and produce a comprehensive trust audit. Focus on detecting:
+1. Fake reviews and bot activity
+2. Review manipulation (deleting negatives, gating)
+3. Dark patterns in UI
+4. Hidden fees and subscription traps
+5. Fake social proof (inflated numbers, fake testimonials)
+6. Astroturfing and paid opinions
+7. Price manipulation and bait-and-switch
+8. Data harvesting concerns
+9. Product/service quality decline (enshittification)
+
+Include SPECIFIC evidence from search results. Quote sources with URLs."""
 
     try:
         result = await agent.run(prompt)
