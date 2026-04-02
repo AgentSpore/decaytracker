@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <Link href="/" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
+      <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
 
       <header className="py-6 mb-8">
         <h1 className="text-2xl font-bold text-accent uppercase tracking-wider">{t("leaderboard")}</h1>

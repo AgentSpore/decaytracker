@@ -23,7 +23,7 @@ export default function CompanyPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <Link href="/" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
+      <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
 
       <header className="py-6 mb-6">
         <div className="flex items-center gap-6">
@@ -82,7 +82,7 @@ export default function CompanyPage() {
       </section>
 
       <footer className="text-center py-6 border-t border-border">
-        <Link href="/" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
+        <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
       </footer>
     </div>
   );

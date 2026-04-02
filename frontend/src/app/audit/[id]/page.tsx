@@ -21,7 +21,7 @@ export default function AuditDetailPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      <Link href="/" className="text-xs text-muted hover:text-accent uppercase tracking-wider" data-testid="back-link">
+      <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider" data-testid="back-link">
         ← {t("back_to_feed")}
       </Link>
 
@@ -91,7 +91,7 @@ export default function AuditDetailPage() {
       </section>
 
       <footer className="text-center py-6 border-t border-border">
-        <Link href="/" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
+        <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
       </footer>
     </div>
   );
