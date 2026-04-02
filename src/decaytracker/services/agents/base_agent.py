@@ -11,36 +11,66 @@ from pydantic_ai.providers.openai import OpenAIProvider
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
+# Stealth script — removes automation fingerprints
+_STEALTH_JS = """
+Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+window.chrome = {runtime: {}};
+Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en', 'ru-RU', 'ru']});
+Object.defineProperty(navigator, 'platform', {get: () => 'MacIntel'});
+"""
+
+_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/124.0.0.0 Safari/537.36"
+)
+
 
 def _make_model() -> FallbackModel:
     def _or(model_id: str) -> OpenAIModel:
         return OpenAIModel(model_id, provider=OpenAIProvider(base_url=OPENROUTER_BASE, api_key=OPENROUTER_KEY))
     return FallbackModel(
-        _or("qwen/qwen3-30b-a3b:free"),           # best at structured output
+        _or("qwen/qwen3-30b-a3b:free"),
         _or("nvidia/nemotron-3-super-120b-a12b:free"),
         _or("stepfun/step-3.5-flash:free"),
         _or("minimax/minimax-m2.5:free"),
     )
 
 
-async def web_search(query: str, max_results: int = 5) -> str:
-    """Google search via Playwright persistent context. Returns titles+snippets+URLs."""
-    from playwright.async_api import async_playwright
-    import asyncio
+async def _new_stealth_context(playwright):
+    """Create a stealth browser context with anti-detection measures."""
+    browser = await playwright.chromium.launch(
+        headless=True,
+        args=[
+            "--disable-blink-features=AutomationControlled",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+        ],
+    )
+    ctx = await browser.new_context(
+        user_agent=_USER_AGENT,
+        locale="en-US,ru-RU",
+        viewport={"width": 1920, "height": 1080},
+        java_script_enabled=True,
+    )
+    # Inject stealth script before any page loads
+    await ctx.add_init_script(_STEALTH_JS)
+    return browser, ctx
 
-    profile_dir = "/tmp/decaytracker-chrome-profile"
-    os.makedirs(profile_dir, exist_ok=True)
+
+async def web_search(query: str, max_results: int = 5) -> str:
+    """Google search via stealth Playwright. Returns titles+snippets+URLs."""
+    from playwright.async_api import async_playwright
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch_persistent_context(
-                profile_dir,
-                headless=True,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
-            )
-            page = browser.pages[0] if browser.pages else await browser.new_page()
+            browser, ctx = await _new_stealth_context(p)
+            page = await ctx.new_page()
+
             await page.goto(
-                f"https://www.google.com/search?q={query}&num={max_results}",
+                f"https://www.google.com/search?q={query}&num={max_results}&hl=en",
                 wait_until="domcontentloaded",
                 timeout=15000,
             )
@@ -66,22 +96,16 @@ async def web_search(query: str, max_results: int = 5) -> str:
 
 
 async def scrape_page(url: str) -> dict:
-    """Scrape URL via Playwright. Returns {title, description, text, status_code}."""
+    """Scrape URL via stealth Playwright. Returns {title, description, text, status_code}."""
     from playwright.async_api import async_playwright
-
-    profile_dir = "/tmp/decaytracker-chrome-profile"
-    os.makedirs(profile_dir, exist_ok=True)
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch_persistent_context(
-                profile_dir,
-                headless=True,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"],
-            )
-            page = browser.pages[0] if browser.pages else await browser.new_page()
+            browser, ctx = await _new_stealth_context(p)
+            page = await ctx.new_page()
+
             resp = await page.goto(url, wait_until="domcontentloaded", timeout=20000)
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(3000)
 
             title = await page.title()
             desc_el = await page.query_selector('meta[name="description"]')
