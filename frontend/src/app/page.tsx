@@ -9,11 +9,10 @@ import { UrlInput, type UrlInputHandle } from "@/components/url-input";
 
 const FILTERS = [
   { key: "", label: "filter_all" },
-  { key: "products", label: "filter_products" },
-  { key: "apps", label: "filter_apps" },
-  { key: "places", label: "filter_places" },
-  { key: "companies", label: "filter_companies" },
-  { key: "websites", label: "filter_websites" },
+  { key: "amazon_product", label: "filter_products" },
+  { key: "appstore_app", label: "filter_apps" },
+  { key: "gmaps_place", label: "filter_places" },
+  { key: "website", label: "filter_websites" },
 ] as const;
 
 const SUGGESTED_URLS = [
