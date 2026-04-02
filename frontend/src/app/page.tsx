@@ -144,13 +144,18 @@ export default function FeedPage() {
       </div>
 
       {/* Nav */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 gap-2">
         <span className="text-[10px] text-muted uppercase tracking-widest font-mono hidden sm:inline">
           {t("press_search")}
         </span>
-        <Link href="/top" className="text-xs text-muted hover:text-accent border border-border px-3 py-1 uppercase tracking-wider hover:border-accent transition-colors ml-auto">
-          {t("leaderboard_link")} &rarr;
-        </Link>
+        <div className="flex gap-2 ml-auto">
+          <Link href="/about" className="text-xs text-muted hover:text-accent border border-border px-3 py-1 uppercase tracking-wider hover:border-accent transition-colors">
+            ?
+          </Link>
+          <Link href="/top" className="text-xs text-muted hover:text-accent border border-border px-3 py-1 uppercase tracking-wider hover:border-accent transition-colors">
+            {t("leaderboard_link")} &rarr;
+          </Link>
+        </div>
       </div>
 
       {/* Feed */}
