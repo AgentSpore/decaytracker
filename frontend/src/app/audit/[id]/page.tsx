@@ -28,8 +28,8 @@ export default function AuditDetailPage() {
 
   // Show status page for pending/processing
   if (audit.status === "pending" || audit.status === "processing") {
-    const queuePos = (audit as Record<string, unknown>).queue_position as number || 0;
-    const queueTotal = (audit as Record<string, unknown>).queue_total as number || 0;
+    const queuePos = audit.queue_position || 0;
+    const queueTotal = audit.queue_total || 0;
     const isPending = audit.status === "pending";
     const etaMin = isPending ? queuePos * 1.5 : 1;
 

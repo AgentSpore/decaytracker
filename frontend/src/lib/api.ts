@@ -34,6 +34,8 @@ export interface AuditCard {
 export interface AuditDetail extends AuditCard {
   findings: AuditFinding[];
   metadata: Record<string, unknown>;
+  queue_position: number;
+  queue_total: number;
 }
 
 export interface Company {
