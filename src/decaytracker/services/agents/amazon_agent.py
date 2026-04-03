@@ -1,6 +1,7 @@
 """Amazon product audit agent — deep fake review & manipulation detection."""
 import asyncio
 import re
+from datetime import date
 
 from loguru import logger
 from pydantic_ai import Agent
@@ -96,7 +97,11 @@ async def audit_amazon(url: str) -> WebsiteAuditResult:
         retries=3,
     )
 
+    today = date.today().isoformat()
+
     prompt = f"""Deep product audit — should a consumer buy this?
+
+IMPORTANT: Today's date is {today}. Do NOT flag current-date content as "future" or "fabricated".
 
 URL: {url}
 ASIN: {asin}

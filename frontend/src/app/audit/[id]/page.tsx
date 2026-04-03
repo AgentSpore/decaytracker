@@ -17,7 +17,65 @@ export default function AuditDetailPage() {
 
   useEffect(() => { if (id) fetchAudit(id); }, [id]);
 
+  // Auto-refresh while pending/processing
+  useEffect(() => {
+    if (!audit || (audit.status !== "pending" && audit.status !== "processing")) return;
+    const interval = setInterval(() => fetchAudit(id), 5000);
+    return () => clearInterval(interval);
+  }, [audit?.status, id, fetchAudit]);
+
   if (!audit) return <div className="max-w-3xl mx-auto px-4 py-16 text-center"><p className="text-accent animate-pulse">LOADING...</p></div>;
+
+  // Show status page for pending/processing
+  if (audit.status === "pending" || audit.status === "processing") {
+    const queuePos = (audit as Record<string, unknown>).queue_position as number || 0;
+    const queueTotal = (audit as Record<string, unknown>).queue_total as number || 0;
+    const isPending = audit.status === "pending";
+    const etaMin = isPending ? queuePos * 1.5 : 1;
+
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <Link href="/feed" className="text-xs text-muted hover:text-accent uppercase tracking-wider">← {t("back_to_feed")}</Link>
+        <div className="mt-12">
+          <p className="text-accent font-mono text-sm mb-2">[{audit.status.toUpperCase()}]</p>
+          <h1 className="text-xl font-bold mb-4">{loc(audit.title) || audit.url}</h1>
+
+          {isPending ? (
+            <>
+              <p className="text-accent font-mono mb-2">{t("queued")}<span className="terminal-cursor" /></p>
+              {queueTotal > 0 && (
+                <p className="text-xs text-muted font-mono mb-4">
+                  // POSITION {queuePos} OF {queueTotal} IN QUEUE
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-accent animate-pulse font-mono mb-2">{t("scanning")}...</p>
+              <div className="mt-2 h-1 bg-border overflow-hidden max-w-xs mx-auto"><div className="indeterminate-bar" /></div>
+            </>
+          )}
+
+          <div className="mt-6 border border-border p-4 text-left max-w-md mx-auto">
+            <p className="text-xs text-accent font-mono font-bold mb-2">// AUDIT STAGES:</p>
+            <p className={`text-xs font-mono mb-1 ${!isPending ? "text-accent" : "text-muted"}`}>
+              {!isPending ? "►" : "○"} 1. SCRAPING PAGE...
+            </p>
+            <p className="text-xs font-mono text-muted mb-1">○ 2. GOOGLE SEARCH: SCAMS & FRAUD</p>
+            <p className="text-xs font-mono text-muted mb-1">○ 3. GOOGLE SEARCH: FAKE REVIEWS</p>
+            <p className="text-xs font-mono text-muted mb-1">○ 4. GOOGLE SEARCH: DARK PATTERNS</p>
+            <p className="text-xs font-mono text-muted mb-1">○ 5. GOOGLE SEARCH: TRUSTPILOT</p>
+            <p className="text-xs font-mono text-muted mb-1">○ 6. AI ANALYSIS</p>
+          </div>
+
+          <p className="text-xs text-muted mt-4 font-mono">
+            // ESTIMATED TIME: ~{Math.ceil(etaMin)} MIN
+          </p>
+          <p className="text-[10px] text-muted/50 mt-2 font-mono">AUTO-REFRESHING EVERY 5S</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">

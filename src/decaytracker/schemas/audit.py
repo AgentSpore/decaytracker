@@ -46,3 +46,5 @@ class AuditCard(BaseModel):
 class AuditDetail(AuditCard):
     findings: list[FindingResponse]
     metadata: dict
+    queue_position: int = 0      # 0 = not queued, 1+ = position in queue
+    queue_total: int = 0         # total pending in queue

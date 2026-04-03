@@ -28,21 +28,9 @@ export const UrlInput = forwardRef<UrlInputHandle>(function UrlInput(_props, ref
     setLoading(true);
     try {
       const { audit_id: id } = await api.submitAudit(trimmed);
-      toast.success(t("audit_queued"), {
-        action: { label: "→", onClick: () => window.location.href = `/audit/${id}` },
-      });
       setUrl("");
-      const poll = async (attempt = 0) => {
-        if (attempt > 30) return;
-        await new Promise((r) => setTimeout(r, 3000));
-        try {
-          const audit = await api.getAudit(id);
-          if (audit.status === "done") { toast.success(t("audit_done")); resetFeed(); fetchFeed(); return; }
-          if (audit.status === "failed") { toast.error(t("audit_error")); return; }
-          poll(attempt + 1);
-        } catch { poll(attempt + 1); }
-      };
-      poll();
+      // Redirect to audit page immediately — user sees live status
+      window.location.href = `/audit/${id}`;
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed");
     } finally { setLoading(false); }

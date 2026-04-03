@@ -220,6 +220,18 @@ class AuditService:
         # Count findings for the card fields
         metadata = json.loads(row["metadata"]) if row["metadata"] else {}
 
+        # Queue position for pending/processing audits
+        queue_position = 0
+        queue_total = 0
+        if row["status"] in ("pending", "processing"):
+            cur = await self.db.execute(
+                "SELECT COUNT(*) FROM audits WHERE status IN ('pending','processing') AND created_at <= ?",
+                (row["created_at"],),
+            )
+            queue_position = (await cur.fetchone())[0]
+            cur = await self.db.execute("SELECT COUNT(*) FROM audits WHERE status IN ('pending','processing')")
+            queue_total = (await cur.fetchone())[0]
+
         return AuditDetail(
             id=row["id"],
             company_id=row["company_id"],
@@ -239,6 +251,8 @@ class AuditService:
             created_at=row["created_at"],
             findings=findings,
             metadata=metadata,
+            queue_position=queue_position,
+            queue_total=queue_total,
         )
 
     async def retry_audit(self, audit_id: int) -> dict:

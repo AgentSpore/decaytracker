@@ -1,5 +1,6 @@
 """Website/company audit agent — deep fraud & manipulation detection."""
 import asyncio
+from datetime import date
 
 from loguru import logger
 from pydantic import BaseModel
@@ -95,7 +96,11 @@ async def audit_website(url: str) -> WebsiteAuditResult:
         retries=3,
     )
 
+    today = date.today().isoformat()
+
     prompt = f"""Perform a deep fraud and manipulation audit:
+
+IMPORTANT: Today's date is {today}. Content dated on or before today is NOT from the future. Do NOT flag real current events as "fabricated" or "misinformation" just because they describe recent events.
 
 URL: {url}
 Domain: {domain}
