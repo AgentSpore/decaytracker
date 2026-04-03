@@ -137,7 +137,7 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   fetchAudit: async (id: number) => {
-    set({ currentAudit: null });
+    // Don't reset to null — prevents flash on auto-refresh
     const audit = await api.getAudit(id);
     set({ currentAudit: audit });
   },
