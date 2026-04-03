@@ -19,12 +19,18 @@ export const UrlInput = forwardRef<UrlInputHandle>(function UrlInput(_props, ref
   const { fetchFeed, resetFeed } = useStore();
 
   const handleSubmit = useCallback(async (overrideUrl?: string) => {
-    const trimmed = (overrideUrl ?? url).trim();
+    let trimmed = (overrideUrl ?? url).trim();
     if (!trimmed) return;
+    // Auto-prepend https:// if no protocol
+    if (trimmed && !trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      trimmed = "https://" + trimmed;
+    }
     setLoading(true);
     try {
       const { audit_id: id } = await api.submitAudit(trimmed);
-      toast.success(t("audit_queued"));
+      toast.success(t("audit_queued"), {
+        action: { label: "→", onClick: () => window.location.href = `/audit/${id}` },
+      });
       setUrl("");
       const poll = async (attempt = 0) => {
         if (attempt > 30) return;

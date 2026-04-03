@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { t, localeLabels, type Locale } from "@/lib/i18n";
@@ -27,6 +27,7 @@ export default function FeedPage() {
     fetchFeed, fetchMore, setPlatformFilter, setLocale, resetFeed, refreshFeed,
   } = useStore();
 
+  const [searchQuery, setSearchQuery] = useState("");
   const observerRef = useRef<HTMLDivElement>(null);
   const urlInputRef = useRef<UrlInputHandle>(null);
   const isAtTopRef = useRef(true);
@@ -127,6 +128,18 @@ export default function FeedPage() {
       {/* URL Input */}
       <section className="mb-6"><UrlInput ref={urlInputRef} /></section>
 
+      {/* Search feed */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search audits by company or title..."
+          className="w-full bg-bg border border-border px-4 py-2 font-mono text-xs text-text outline-none focus:border-accent placeholder:text-muted/50"
+          data-testid="feed-search"
+        />
+      </div>
+
       {/* Filters — horizontally scrollable on mobile */}
       <div
         className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 mb-4"
@@ -160,7 +173,17 @@ export default function FeedPage() {
 
       {/* Feed */}
       <div className="flex flex-col gap-3" data-testid="feed-list">
-        {feed.map((audit) => <AuditCard key={audit.id} audit={audit} />)}
+        {feed
+          .filter((a) => {
+            if (!searchQuery.trim()) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+              a.company_name?.toLowerCase().includes(q) ||
+              a.title?.toLowerCase().includes(q) ||
+              a.url?.toLowerCase().includes(q)
+            );
+          })
+          .map((audit) => <AuditCard key={audit.id} audit={audit} />)}
       </div>
 
       {feedLoading && <p className="text-center text-accent py-8 animate-pulse font-mono">LOADING...</p>}
