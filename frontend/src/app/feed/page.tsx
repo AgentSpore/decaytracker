@@ -28,6 +28,7 @@ export default function FeedPage() {
   } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "done" | "queue">("all");
   const observerRef = useRef<HTMLDivElement>(null);
   const urlInputRef = useRef<UrlInputHandle>(null);
   const isAtTopRef = useRef(true);
@@ -156,6 +157,27 @@ export default function FeedPage() {
         ))}
       </div>
 
+      {/* Status filter */}
+      <div className="flex items-center gap-2 mb-4">
+        {([
+          { key: "all", label: "ALL" },
+          { key: "done", label: "COMPLETED" },
+          { key: "queue", label: "IN QUEUE" },
+        ] as const).map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setStatusFilter(s.key)}
+            className={`text-[10px] font-mono uppercase tracking-widest px-3 py-1 border transition-colors ${
+              statusFilter === s.key
+                ? "border-accent text-accent bg-accent/10"
+                : "border-border text-muted hover:border-accent hover:text-accent"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       {/* Nav */}
       <div className="flex justify-between items-center mb-4 gap-2">
         <span className="text-[10px] text-muted uppercase tracking-widest font-mono hidden sm:inline">
@@ -175,6 +197,10 @@ export default function FeedPage() {
       <div className="flex flex-col gap-3" data-testid="feed-list">
         {feed
           .filter((a) => {
+            // Status filter
+            if (statusFilter === "done" && a.status !== "done") return false;
+            if (statusFilter === "queue" && a.status !== "pending" && a.status !== "processing") return false;
+            // Search filter
             if (!searchQuery.trim()) return true;
             const q = searchQuery.toLowerCase();
             return (
